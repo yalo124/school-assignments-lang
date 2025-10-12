@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Random Quote Generator</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#7c3aed;
+      --muted:#9aa4b2;
+      --glass: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+      background: linear-gradient(135deg,#071023 0%, #0b1b2b 50%, #041022 100%);
+      color:#e6eef6;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .card{
+      width:100%;
+      max-width:760px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:14px;
+      padding:28px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .title{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:48px;height:48px;border-radius:10px;display:grid;place-items:center;
+      background: linear-gradient(135deg,var(--accent), #4f46e5);
+      font-weight:700;color:white;font-size:18px;box-shadow:0 6px 18px rgba(124,58,237,0.18);
+    }
+    h1{margin:0;font-size:18px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .quote-area{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.008));
+      border-radius:10px;padding:22px;border:1px solid rgba(255,255,255,0.02);
+      display:flex;flex-direction:column;gap:12px;
+    }
+
+    .quote-text{
+      font-size:20px; line-height:1.4; margin:0; font-weight:600;
+      quotes: "“" "”" "‘" "’";
+    }
+    .quote-text::before{content:open-quote;margin-right:6px}
+    .quote-text::after{content:close-quote;margin-left:6px}
+
+    .quote-meta{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .author{color:var(--muted);font-size:14px}
+
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    button{cursor:pointer;border:0;padding:10px 14px;border-radius:10px;font-weight:600}
+    .btn-primary{background:linear-gradient(90deg,var(--accent),#4f46e5);color:white}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .small{padding:8px 10px;font-size:13px}
+
+    .footer{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}
+
+    @media(max-width:520px){
+      .quote-text{font-size:18px}
+      .logo{width:40px;height:40px}
+    }
+
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <div class="header">
+      <div class="title">
+        <div class="logo">Q</div>
+        <div>
+          <h1>Random Quote Generator</h1>
+          <p class="lead">Click "New Quote" to fetch an inspiring line. Offline-safe.</p>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="copyBtn" class="btn-ghost small">Copy</button>
+        <button id="tweetBtn" class="btn-ghost small">Tweet</button>
+        <button id="newQuoteBtn" class="btn-primary">New Quote</button>
+      </div>
+    </div>
+
+    <section class="quote-area" aria-live="polite">
+      <p id="quoteText" class="quote-text">Loading a crisp thought...</p>
+      <div class="quote-meta">
+        <div class="author" id="quoteAuthor">—</div>
+        <div style="font-size:12px;color:var(--muted)">Source: <span id="quoteSource">local</span></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <div>Tip: Press <kbd>Space</kbd> for a new quote</div>
+      <div>Made with ❤️</div>
+    </div>
+  </main>
+
+  <script>
+    // Small curated offline quote list (fallback)
+    const LOCAL_QUOTES = [
+      {content: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb"},
+      {content: "Do not wait to strike till the iron is hot; but make it hot by striking.", author: "William Butler Yeats"},
+      {content: "What we think, we become.", author: "Buddha"},
+      {content: "Life is 10% what happens to us and 90% how we react to it.", author: "Charles R. Swindoll"},
+      {content: "Strive not to be a success, but rather to be of value.", author: "Albert Einstein"},
+      {content: "Act as if what you do makes a difference. It does.", author: "William James"},
+      {content: "Success usually comes to those who are too busy to be looking for it.", author: "Henry David Thoreau"},
+      {content: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky"},
+      {content: "Whether you think you can or you think you can’t, you’re right.", author: "Henry Ford"},
+    ];
+
+    // UI references
+    const quoteText = document.getElementById('quoteText');
+    const quoteAuthor = document.getElementById('quoteAuthor');
+    const quoteSource = document.getElementById('quoteSource');
+    const newQuoteBtn = document.getElementById('newQuoteBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const tweetBtn = document.getElementById('tweetBtn');
+
+    // Pick a random item from array
+    function randomFrom(arr){
+      return arr[Math.floor(Math.random()*arr.length)];
+    }
+
+    // Update UI helper
+    function showQuote({content,author,source='local'}){
+      quoteText.textContent = content;
+      quoteAuthor.textContent = author ? `— ${author}` : '— Unknown';
+      quoteSource.textContent = source;
+    }
+
+    // Try to fetch from quotable API, fallback to local quotes
+    async function fetchQuote(){
+      // optimistic UI: show spinner-ish text
+      showQuote({content: 'Finding something wise...', author: ''});
+
+      // First try network fetch
+      try{
+        const controller = new AbortController();
+        const timeout = setTimeout(()=>controller.abort(), 5000); // 5s timeout
+        const res = await fetch('https://api.quotable.io/random', {signal: controller.signal});
+        clearTimeout(timeout);
+        if(!res.ok) throw new Error('Network response not ok');
+        const data = await res.json();
+        showQuote({content: data.content, author: data.author, source: 'quotable.io'});
+        return;
+      }catch(err){
+        // fallback to local
+        const picked = randomFrom(LOCAL_QUOTES);
+        showQuote({...picked, source: 'local (offline)'});
+      }
+    }
+
+    // Copy to clipboard
+    copyBtn.addEventListener('click', async ()=>{
+      const text = `${quoteText.textContent} ${quoteAuthor.textContent}`;
+      try{
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(()=>copyBtn.textContent = 'Copy', 1400);
+      }catch(e){
+        copyBtn.textContent = 'Failed';
+        setTimeout(()=>copyBtn.textContent = 'Copy', 1400);
+      }
+    });
+
+    // Tweet current quote
+    tweetBtn.addEventListener('click', ()=>{
+      const text = `${quoteText.textContent} ${quoteAuthor.textContent}`;
+      const maxLen = 280;
+      let body = text;
+      if(body.length > maxLen) body = body.slice(0, maxLen-3) + '...';
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(body)}`;
+      window.open(url, '_blank');
+    });
+
+    // New quote
+    newQuoteBtn.addEventListener('click', fetchQuote);
+
+    // Keyboard shortcut: Space -> new quote (when not focused on input fields)
+    window.addEventListener('keydown', (e)=>{
+      if(e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA'){
+        e.preventDefault();
+        fetchQuote();
+      }
+    });
+
+    // Initial quote on load
+    fetchQuote();
+
+    // Expose a small API for future expansions (optional)
+    window.QuoteGenerator = {fetchQuote, showQuote, LOCAL_QUOTES};
+  </script>
+</body>
+</html>
