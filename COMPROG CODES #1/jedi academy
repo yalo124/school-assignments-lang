@@ -1,0 +1,57 @@
+#include <stdio.h>
+
+int main(){
+    int recommendee=0;
+    int height=0;
+    int age=0;
+    int citizenship=0;
+    
+    printf("Jedi Knight Academy Application\n");
+    
+    printf("Recommendee of Jedi Master Obi-Wan?: ");
+    scanf("%d", &recommendee);
+    
+    if(recommendee==1){
+        printf("You are accepted!\n");
+    }
+    else{
+        printf("Please input your height, age, and citizenship\n");
+        
+        printf("Input Height(cm): ");
+        scanf("%d", &height);
+        printf("Input Age: ");
+        scanf("%d", &age);
+        printf("Input Citizenship: ");
+        scanf("%d", &citizenship);
+    
+        if(height >= 200){
+            printf("Height mo Pwede\n");
+        } else {
+            printf("Bawal (Height too short)\n");
+        }
+        
+        if(age >= 21 && age < 25){
+            printf("Age mo Pwede\n");
+        } 
+        else if(age < 21){
+            printf("Bawal Age mo (too young)\n");
+        }
+        else{
+            printf("Bawal ka (too old)\n");
+        }
+        
+        if (citizenship == 1){
+            printf("Citizenship: Accepted\n");
+        } else {
+            printf("Citizenship: Rejected\n");
+        }
+    
+        if (height >= 200 && age >= 21 && age < 25 && citizenship == 1) {
+            printf("Overall: You are accepted!\n");
+        } else {
+            printf("Overall: You are rejected.\n");
+        }
+    }
+    
+    return 0;
+}
